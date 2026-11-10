@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MyDB - Database From Scratch</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #f4f6f8;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+            color: #222;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            background: #222;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f1f3f5;
+            border-radius: 8px;
+            min-height: 50px;
+        }
+
+        .records {
+            margin-top: 15px;
+        }
+
+        .record {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .record:last-child {
+            border-bottom: none;
+        }
+
+        .key {
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+
+            body {
+                padding: 15px;
+            }
+
+            .buttons {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .card {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>MY DATABASE</h1>
+
+    <p class="subtitle">
+        Database Management System From Scratch
+    </p>
+
+    <div class="card">
+
+        <div class="form-group">
+            <label>Key</label>
+            <input
+                type="number"
+                id="key"
+                placeholder="Enter key"
+            >
+        </div>
+
+        <div class="form-group">
+            <label>Value</label>
+            <input
+                type="text"
+                id="value"
+                placeholder="Enter value"
+            >
+        </div>
+
+        <div class="buttons">
+
+            <button onclick="insertRecord()">
+                INSERT
+            </button>
+
+            <button onclick="searchRecord()">
+                SEARCH
+            </button>
+
+            <button onclick="updateRecord()">
+                UPDATE
+            </button>
+
+            <button onclick="deleteRecord()">
+                DELETE
+            </button>
+
+        </div>
+
+        <div class="result" id="result">
+            Ready...
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>Database Records</h2>
+
+        <div class="records" id="records">
+
+            <div class="records" id="records">
+    <div class="record">
+        <span>No records loaded</span>
+    </div>
+</div>
+
+<script>
+
+const SERVER = "http://localhost:8080";
+
+
+// =============================
+// INSERT
+// =============================
+
+async function insertRecord() {
+
+    const key = document.getElementById("key").value;
+    const value = document.getElementById("value").value;
+
+    if (key === "" || value === "") {
+        showResult("Please enter key and value.");
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            SERVER + "/insert?key=" +
+            encodeURIComponent(key) +
+            "&value=" +
+            encodeURIComponent(value)
+        );
+
+        const result = await response.text();
+
+        showResult(result);
+
+        loadRecords();
+
+    } catch (error) {
+
+        showResult(
+            "Server connection failed."
+        );
+
+        console.error(error);
+    }
+}
+
+
+// =============================
+// SEARCH
+// =============================
+
+async function searchRecord() {
+
+    const key = document.getElementById("key").value;
+
+    if (key === "") {
+        showResult("Please enter a key.");
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            SERVER +
+            "/search?key=" +
+            encodeURIComponent(key)
+        );
+
+        const result = await response.text();
+
+        showResult(result);
+
+    } catch (error) {
+
+        showResult(
+            "Server connection failed."
+        );
+
+        console.error(error);
+    }
+}
+
+
+// =============================
+// UPDATE
+// =============================
+
+async function updateRecord() {
+
+    const key = document.getElementById("key").value;
+    const value = document.getElementById("value").value;
+
+    if (key === "" || value === "") {
+        showResult("Please enter key and value.");
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            SERVER +
+            "/update?key=" +
+            encodeURIComponent(key) +
+            "&value=" +
+            encodeURIComponent(value)
+        );
+
+        const result = await response.text();
+
+        showResult(result);
+
+        loadRecords();
+
+    } catch (error) {
+
+        showResult(
+            "Server connection failed."
+        );
+
+        console.error(error);
+    }
+}
+
+
+// =============================
+// DELETE
+// =============================
+
+async function deleteRecord() {
+
+    const key = document.getElementById("key").value;
+
+    if (key === "") {
+        showResult("Please enter a key.");
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            SERVER +
+            "/delete?key=" +
+            encodeURIComponent(key)
+        );
+
+        const result = await response.text();
+
+        showResult(result);
+
+        loadRecords();
+
+    } catch (error) {
+
+        showResult(
+            "Server connection failed."
+        );
+
+        console.error(error);
+    }
+}
+
+
+// =============================
+// SHOW RESULT
+// =============================
+
+function showResult(message) {
+
+    document.getElementById("result").innerText =
+        message;
+}
+
+
+// =============================
+// LOAD RECORDS
+// =============================
+
+async function loadRecords() {
+
+    try {
+
+        const response = await fetch(
+            SERVER + "/show"
+        );
+
+        const result = await response.text();
+
+        const recordsDiv =
+            document.getElementById("records");
+
+        recordsDiv.innerHTML = "";
+
+        if (
+            result.trim() === "" ||
+            result.trim() === "No records found."
+        ) {
+
+            recordsDiv.innerHTML =
+                `<div class="record">
+                    <span>No records found.</span>
+                </div>`;
+
+            return;
+        }
+
+        const lines =
+            result.trim().split("\n");
+
+        lines.forEach(line => {
+
+            const parts =
+                line.split(" -> ");
+
+            if (parts.length >= 2) {
+
+                const key = parts[0];
+                const value =
+                    parts.slice(1).join(" -> ");
+
+                recordsDiv.innerHTML +=
+                    `<div class="record">
+                        <span class="key">
+                            ${key}
+                        </span>
+
+                        <span>
+                            ${value}
+                        </span>
+                    </div>`;
+            }
+
+        });
+
+    } catch (error) {
+
+        document.getElementById("records").innerHTML =
+            `<div class="record">
+                <span>
+                    Server not connected.
+                </span>
+            </div>`;
+
+        console.error(error);
+    }
+}
+// =============================
+// START
+// =============================
+
+loadRecords();
+
+</script>
+</body>
+</html>
